@@ -37,7 +37,11 @@
     min-height: 100vh;
   }
 
-  header { text-align: center; margin: 8px 0 20px; }
+  header {
+    text-align: center;
+    margin: 8px 0 20px;
+    position: relative;
+  }
   header h1 {
     font-family: 'Fraunces', serif;
     font-size: 1.5rem;
@@ -46,14 +50,46 @@
   }
   header .sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
 
-  .month-tabs {
+  .lock-btn {
+    position: absolute;
+    top: 0; right: 0;
+    background: none;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 6px 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.2s;
     display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 0.72rem;
   }
+  .lock-btn.unlocked {
+    border-color: var(--green);
+    color: var(--green);
+    background: #f0f6ee;
+  }
+  .lock-btn .lock-icon { font-size: 1rem; }
+
+  .view-banner {
+    background: #fff8e6;
+    border: 1.5px solid #f0d080;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 0.78rem;
+    color: #8a6a10;
+    text-align: center;
+    margin-bottom: 14px;
+    display: none;
+  }
+  .view-banner.show { display: block; }
+
+  .month-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
   .month-tab {
-    flex: 1;
-    padding: 12px 8px;
+    flex: 1; padding: 12px 8px;
     border: 1.5px solid var(--line);
     background: var(--card);
     border-radius: 14px;
@@ -81,7 +117,6 @@
     margin-bottom: 16px;
     box-shadow: 0 6px 20px rgba(43,42,38,0.05);
   }
-
   .remaining-label { font-size: 0.78rem; color: var(--muted); text-align: center; }
   .remaining-amount {
     font-family: 'Fraunces', serif;
@@ -104,16 +139,9 @@
   }
   .budget-meta b { color: var(--ink); }
 
-  .bar-track {
-    height: 9px;
-    background: #ece5d6;
-    border-radius: 99px;
-    margin-top: 14px;
-    overflow: hidden;
-  }
+  .bar-track { height: 9px; background: #ece5d6; border-radius: 99px; margin-top: 14px; overflow: hidden; }
   .bar-fill {
-    height: 100%;
-    border-radius: 99px;
+    height: 100%; border-radius: 99px;
     background: linear-gradient(90deg, var(--green), #7a9d6f);
     transition: width 0.4s ease;
   }
@@ -121,9 +149,7 @@
   .bar-fill.over { background: linear-gradient(90deg, var(--red), #d4564a); }
 
   .rate-box {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    display: flex; align-items: center; gap: 10px;
     background: var(--card);
     border: 1.5px solid var(--line);
     border-radius: 16px;
@@ -132,17 +158,12 @@
   }
   .rate-box label { font-size: 0.82rem; color: var(--muted); white-space: nowrap; }
   .rate-box .rate-input {
-    flex: 1;
-    border: none;
-    background: transparent;
+    flex: 1; border: none; background: transparent;
     font-family: 'Fraunces', serif;
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--accent);
-    width: 100%;
-    text-align: right;
-    outline: none;
+    font-size: 1.5rem; font-weight: 600; color: var(--accent);
+    width: 100%; text-align: right; outline: none;
   }
+  .rate-box .rate-input:read-only { color: var(--muted); cursor: default; }
   .rate-box .unit { font-size: 0.8rem; color: var(--muted); }
 
   .add-card {
@@ -167,39 +188,32 @@
     transition: border 0.2s;
   }
   .field input:focus { border-color: var(--accent); }
+  .field input:read-only { color: var(--muted); cursor: default; }
   .row2 { display: flex; gap: 10px; }
   .row2 .field { flex: 1; }
 
   .yen-preview {
-    text-align: center;
-    font-size: 0.82rem;
-    color: var(--muted);
-    margin: 6px 0 12px;
-    min-height: 1.2em;
+    text-align: center; font-size: 0.82rem; color: var(--muted);
+    margin: 6px 0 12px; min-height: 1.2em;
   }
   .yen-preview b { font-family: 'Fraunces', serif; color: var(--accent); font-size: 1.05rem; }
 
   .btn-add {
-    width: 100%;
-    border: none;
-    background: var(--ink);
-    color: var(--paper);
-    border-radius: 14px;
-    padding: 15px;
+    width: 100%; border: none;
+    background: var(--ink); color: var(--paper);
+    border-radius: 14px; padding: 15px;
     font-family: 'Zen Maru Gothic', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: 1rem; font-weight: 700;
     cursor: pointer;
-    transition: transform 0.1s, background 0.2s;
+    transition: transform 0.1s, opacity 0.2s;
   }
   .btn-add:active { transform: scale(0.98); }
+  .btn-add:disabled { opacity: 0.35; cursor: not-allowed; }
 
   .list-title {
-    font-size: 0.8rem;
-    color: var(--muted);
+    font-size: 0.8rem; color: var(--muted);
     margin: 0 4px 10px;
-    display: flex;
-    justify-content: space-between;
+    display: flex; justify-content: space-between;
   }
 
   .entry {
@@ -208,17 +222,12 @@
     border-radius: 16px;
     padding: 14px 16px;
     margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    display: flex; align-items: center; gap: 12px;
   }
   .entry .info { flex: 1; min-width: 0; }
   .entry .store {
-    font-size: 0.95rem;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 0.95rem; font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .entry .detail { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
   .entry .detail .confirmed { color: var(--green); font-weight: 700; }
@@ -227,61 +236,51 @@
   .entry .amt .usd { font-family: 'Fraunces', serif; font-size: 1.15rem; font-weight: 600; }
   .entry .amt .jpy { font-size: 0.72rem; color: var(--muted); }
   .entry .del {
-    border: none;
-    background: none;
-    color: var(--muted);
-    font-size: 1.3rem;
-    cursor: pointer;
-    padding: 0 2px;
-    line-height: 1;
+    border: none; background: none; color: var(--muted);
+    font-size: 1.3rem; cursor: pointer; padding: 0 2px; line-height: 1;
   }
   .entry-actions { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
   .btn-confirm {
     border: 1px solid var(--accent-soft);
-    background: var(--paper);
-    color: var(--accent);
-    border-radius: 8px;
-    font-size: 0.68rem;
-    padding: 3px 8px;
+    background: var(--paper); color: var(--accent);
+    border-radius: 8px; font-size: 0.68rem; padding: 3px 8px;
     cursor: pointer;
-    font-family: 'Zen Maru Gothic', sans-serif;
-    white-space: nowrap;
+    font-family: 'Zen Maru Gothic', sans-serif; white-space: nowrap;
   }
 
   .empty { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 30px 0; }
 
   .btn-export {
-    width: 100%;
-    border: 1.5px solid var(--green);
-    background: var(--card);
-    color: var(--green);
-    border-radius: 14px;
-    padding: 14px;
+    width: 100%; border: 1.5px solid var(--green);
+    background: var(--card); color: var(--green);
+    border-radius: 14px; padding: 14px;
     font-family: 'Zen Maru Gothic', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 700;
-    cursor: pointer;
-    margin-top: 6px;
+    font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; margin-top: 6px;
     transition: transform 0.1s, background 0.2s;
   }
   .btn-export:active { transform: scale(0.98); background: #eef2e9; }
 
+  /* sync indicator */
+  .sync-dot {
+    display: inline-block; width: 7px; height: 7px;
+    border-radius: 50%; background: var(--muted);
+    margin-left: 6px; vertical-align: middle;
+    transition: background 0.3s;
+  }
+  .sync-dot.ok  { background: var(--green); }
+  .sync-dot.err { background: var(--red); }
+
   .modal-bg {
     position: fixed; inset: 0;
     background: rgba(43,42,38,0.5);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    z-index: 50;
+    display: none; align-items: center; justify-content: center;
+    padding: 24px; z-index: 50;
   }
   .modal-bg.show { display: flex; }
   .modal {
-    background: var(--card);
-    border-radius: 20px;
-    padding: 22px;
-    width: 100%;
-    max-width: 340px;
+    background: var(--card); border-radius: 20px;
+    padding: 22px; width: 100%; max-width: 340px;
   }
   .modal h3 { font-family: 'Fraunces', serif; font-size: 1.1rem; margin-bottom: 4px; }
   .modal p { font-size: 0.78rem; color: var(--muted); margin-bottom: 14px; }
@@ -289,26 +288,49 @@
   .modal-auto { margin-bottom: 14px; }
   .modal-fetching { font-size: 0.85rem; color: var(--muted); text-align: center; padding: 14px; }
   .modal-result {
-    background: var(--paper);
-    border-radius: 12px;
-    padding: 14px;
-    text-align: center;
-    line-height: 1.6;
+    background: var(--paper); border-radius: 12px;
+    padding: 14px; text-align: center; line-height: 1.6;
   }
   .modal-result .conv {
-    font-family: 'Fraunces', serif;
-    font-size: 1.4rem;
-    font-weight: 600;
-    color: var(--green);
+    font-family: 'Fraunces', serif; font-size: 1.4rem;
+    font-weight: 600; color: var(--green);
   }
   .modal-result .rate-used { font-size: 0.74rem; color: var(--muted); margin-top: 2px; }
   .modal-result .warn-fetch { font-size: 0.74rem; color: var(--accent); margin-top: 6px; }
   .modal .modal-btns button {
     flex: 1; padding: 12px; border-radius: 12px; border: none;
-    font-family: 'Zen Maru Gothic', sans-serif; font-size: 0.9rem; font-weight: 700; cursor: pointer;
+    font-family: 'Zen Maru Gothic', sans-serif; font-size: 0.9rem;
+    font-weight: 700; cursor: pointer;
   }
   .modal .cancel { background: var(--paper); border: 1.5px solid var(--line); color: var(--muted); }
   .modal .ok { background: var(--accent); color: #fff; }
+
+  /* PIN modal */
+  .pin-modal {
+    background: var(--card); border-radius: 20px;
+    padding: 24px; width: 100%; max-width: 300px;
+    text-align: center;
+  }
+  .pin-modal h3 { font-family: 'Fraunces', serif; font-size: 1.1rem; margin-bottom: 6px; }
+  .pin-modal p { font-size: 0.78rem; color: var(--muted); margin-bottom: 16px; }
+  .pin-input {
+    width: 100%; border: 2px solid var(--line);
+    border-radius: 12px; padding: 14px;
+    font-family: 'Fraunces', serif; font-size: 2rem;
+    text-align: center; letter-spacing: 0.4em;
+    background: var(--paper); color: var(--ink); outline: none;
+    transition: border 0.2s;
+  }
+  .pin-input:focus { border-color: var(--accent); }
+  .pin-error { font-size: 0.75rem; color: var(--red); margin-top: 6px; min-height: 1.2em; }
+  .pin-btns { display: flex; gap: 8px; margin-top: 14px; }
+  .pin-btns button {
+    flex: 1; padding: 12px; border-radius: 12px; border: none;
+    font-family: 'Zen Maru Gothic', sans-serif; font-size: 0.9rem;
+    font-weight: 700; cursor: pointer;
+  }
+  .pin-cancel { background: var(--paper); border: 1.5px solid var(--line) !important; border: none; color: var(--muted); }
+  .pin-ok { background: var(--accent); color: #fff; }
 
   .note {
     font-size: 0.7rem; color: var(--muted); text-align: center;
@@ -318,9 +340,17 @@
 </head>
 <body>
   <header>
-    <h1>帰省家計簿</h1>
+    <h1>帰省家計簿<span class="sync-dot" id="syncDot" title="同期状態"></span></h1>
     <div class="sub">円で入力 → その日のレートで即ドル換算</div>
+    <button class="lock-btn" id="lockBtn" onclick="onLockClick()">
+      <span class="lock-icon" id="lockIcon">🔒</span>
+      <span id="lockLabel">閲覧中</span>
+    </button>
   </header>
+
+  <div class="view-banner" id="viewBanner">
+    👁 閲覧モード — データはリアルタイムで同期されます
+  </div>
 
   <div class="month-tabs" id="monthTabs"></div>
 
@@ -341,7 +371,7 @@
     <span class="unit">/ $1</span>
   </div>
 
-  <div class="add-card">
+  <div class="add-card" id="addCard">
     <div class="field">
       <label>お店・内容</label>
       <input type="text" id="storeInput" placeholder="例：スーパー、ランチ">
@@ -369,14 +399,15 @@
   <button class="btn-export" id="exportBtn">📊 Excelに書き出す（CSV）</button>
 
   <div class="note">
-    💡 まず「お店」と「円額」で記録。あとで<b>「確定」</b>を押すと、その日のレートを自動で取ってきて円→ドルに換算し、その額で固定します。残額はドル基準なので、予算（$2500 / $2000）にぴったり合います。
+    💡 まず「お店」と「円額」で記録。あとで<b>「確定」</b>を押すと、その日のレートを自動で取ってきて円→ドルに換算し、その額で固定します。
   </div>
 
+  <!-- 確定モーダル -->
   <div class="modal-bg" id="confirmModal">
     <div class="modal">
-      <h3 id="modalTitle">この取引を確定</h3>
-      <p id="modalDesc">確定した日のレートで円→ドルに換算して固定します</p>
-      <div id="modalAuto" class="modal-auto">
+      <h3>この取引を確定</h3>
+      <p>確定した日のレートで円→ドルに換算して固定します</p>
+      <div class="modal-auto">
         <div class="modal-fetching" id="modalFetching">今日のレートを取得中…</div>
         <div class="modal-result" id="modalResult" style="display:none;"></div>
       </div>
@@ -391,62 +422,233 @@
     </div>
   </div>
 
-<script>
-const BUDGETS = { 1: 2500, 2: 2000 };
-const MONTH_LABELS = { 1: '1ヶ月目', 2: '2ヶ月目' };
-let state = { rate: 160, currentMonth: 1, entries: [] };
-let editingId = null;
+  <!-- PINモーダル -->
+  <div class="modal-bg" id="pinModal">
+    <div class="pin-modal">
+      <h3 id="pinTitle">🔐 編集モード</h3>
+      <p id="pinDesc">PINを入力してください</p>
+      <input type="password" inputmode="numeric" maxlength="4" class="pin-input" id="pinInput" placeholder="····">
+      <div class="pin-error" id="pinError"></div>
+      <div class="pin-btns">
+        <button class="pin-cancel" onclick="closePinModal()">キャンセル</button>
+        <button class="pin-ok" onclick="submitPin()">OK</button>
+      </div>
+    </div>
+  </div>
 
-// ---- persistence (localStorage) ----
-function loadState() {
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, set, onValue, get } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+// ============================================================
+// Firebase
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyCgn5zRQRCdAzKVhOiXb_D4yAhefcD1PXQ",
+  authDomain: "kakeibo-app2026.firebaseapp.com",
+  databaseURL: "https://kakeibo-app2026-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "kakeibo-app2026",
+  storageBucket: "kakeibo-app2026.firebasestorage.app",
+  messagingSenderId: "444387999508",
+  appId: "1:444387999508:web:78286478affe4274df8c01"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+// ============================================================
+// State
+// ============================================================
+const BUDGETS      = { 1: 2500, 2: 2000 };
+const MONTH_LABELS = { 1: '1ヶ月目', 2: '2ヶ月目' };
+let state      = { rate: 160, currentMonth: 1, entries: [] };
+let isEditMode = false;
+let editingId  = null;
+let fetchedRate = null;
+
+// ============================================================
+// Sync indicator
+// ============================================================
+function setSyncDot(status) {
+  const dot = document.getElementById('syncDot');
+  dot.className = 'sync-dot ' + status;
+}
+
+// ============================================================
+// Firebase persistence
+// ============================================================
+function saveState() {
+  // ローカルにも保存（Firebase が使えない環境でのフォールバック）
+  try { localStorage.setItem('budget-state', JSON.stringify(state)); } catch (_) {}
+  setSyncDot('');
+  set(ref(db, 'kakeibo/state'), state)
+    .then(() => setSyncDot('ok'))
+    .catch(() => setSyncDot('err'));
+}
+
+// リアルタイムリスナー（誰かが更新したら自動反映）
+onValue(ref(db, 'kakeibo/state'), snapshot => {
+  if (snapshot.exists()) {
+    state = snapshot.val();
+    if (!state.rate)         state.rate = 160;
+    if (!state.currentMonth) state.currentMonth = 1;
+    if (!state.entries)      state.entries = [];
+  }
+  setSyncDot('ok');
+  render();
+}, err => {
+  // Firebase rules が未設定（ロックモード）の場合はローカルにフォールバック
+  console.warn('Firebase read error:', err.code);
+  setSyncDot('err');
   try {
     const raw = localStorage.getItem('budget-state');
     if (raw) state = JSON.parse(raw);
-  } catch (e) { /* first run */ }
+  } catch (_) {}
   if (!state.rate)         state.rate = 160;
   if (!state.currentMonth) state.currentMonth = 1;
   if (!state.entries)      state.entries = [];
+  render();
+  // ルール未設定の警告をヘッダーに表示
+  const banner = document.getElementById('viewBanner');
+  banner.textContent = '⚠️ Firebase の権限設定が必要です。下記の手順でルールを更新してください。';
+  banner.style.background = '#fff0f0';
+  banner.style.borderColor = '#f0a0a0';
+  banner.style.color = '#8a1010';
+  banner.classList.add('show');
+});
+
+// ============================================================
+// PIN helpers
+// ============================================================
+async function getPin() {
+  const snap = await get(ref(db, 'kakeibo/settings/editPin'));
+  return snap.exists() ? snap.val() : null;
 }
-function saveState() {
-  try { localStorage.setItem('budget-state', JSON.stringify(state)); }
-  catch (e) { console.error('save failed', e); }
+async function setPin(pin) {
+  await set(ref(db, 'kakeibo/settings/editPin'), pin);
 }
 
-// ---- helpers ----
-const fmtUSD = n => '$' + n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+// ============================================================
+// Edit mode UI
+// ============================================================
+function applyEditMode() {
+  const edit = isEditMode;
+  document.getElementById('lockBtn').className  = 'lock-btn' + (edit ? ' unlocked' : '');
+  document.getElementById('lockIcon').textContent = edit ? '🔓' : '🔒';
+  document.getElementById('lockLabel').textContent = edit ? '編集中' : '閲覧中';
+  document.getElementById('viewBanner').className = 'view-banner' + (edit ? '' : ' show');
+  document.getElementById('addCard').style.display = edit ? '' : 'none';
+  document.getElementById('rateInput').readOnly = !edit;
+}
+
+// ============================================================
+// Lock button click → PIN flow
+// ============================================================
+window.onLockClick = async function() {
+  if (isEditMode) {
+    // ロックする
+    isEditMode = false;
+    applyEditMode();
+    return;
+  }
+  // PINを確認
+  openPinModal();
+};
+
+// PIN modal
+let pinResolve = null;
+
+function openPinModal() {
+  document.getElementById('pinInput').value = '';
+  document.getElementById('pinError').textContent = '';
+  document.getElementById('pinModal').classList.add('show');
+  setTimeout(() => document.getElementById('pinInput').focus(), 100);
+}
+window.closePinModal = function() {
+  document.getElementById('pinModal').classList.remove('show');
+};
+
+window.submitPin = async function() {
+  const entered = document.getElementById('pinInput').value.trim();
+  if (!entered) return;
+
+  const stored = await getPin();
+
+  if (!stored) {
+    // 初回：PIN設定モード
+    if (!/^\d{4}$/.test(entered)) {
+      document.getElementById('pinError').textContent = '4桁の数字を入力してください';
+      return;
+    }
+    await setPin(entered);
+    isEditMode = true;
+    closePinModal();
+    applyEditMode();
+    return;
+  }
+
+  if (entered === stored) {
+    isEditMode = true;
+    closePinModal();
+    applyEditMode();
+  } else {
+    document.getElementById('pinError').textContent = 'PINが違います';
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinInput').focus();
+  }
+};
+
+// Enterキーで送信
+document.getElementById('pinInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') window.submitPin();
+});
+
+// ============================================================
+// Helpers
+// ============================================================
+const fmtUSD  = n => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtUSD0 = n => '$' + Math.round(n).toLocaleString('en-US');
-const fmtYen = n => '¥' + Math.round(n).toLocaleString('ja-JP');
+const fmtYen  = n => '¥' + Math.round(n).toLocaleString('ja-JP');
 
 function entryUSD(e) {
-  if (e.confirmedUsd != null) return e.confirmedUsd;
-  return e.yen / e.rate;
+  return e.confirmedUsd != null ? e.confirmedUsd : e.yen / e.rate;
 }
 
-// ---- render ----
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// ============================================================
+// Render
+// ============================================================
 function render() {
   // month tabs
   const tabs = document.getElementById('monthTabs');
   tabs.innerHTML = '';
-  [1,2].forEach(m => {
+  [1, 2].forEach(m => {
     const d = document.createElement('div');
     d.className = 'month-tab' + (state.currentMonth === m ? ' active' : '');
     d.innerHTML = `${MONTH_LABELS[m]}<b>${fmtUSD0(BUDGETS[m])}</b>`;
-    d.onclick = () => { state.currentMonth = m; saveState(); render(); };
+    d.onclick = () => {
+      if (!isEditMode) return;
+      state.currentMonth = m;
+      saveState();
+    };
     tabs.appendChild(d);
   });
 
   const monthEntries = state.entries.filter(e => e.month === state.currentMonth);
-  const spent = monthEntries.reduce((s,e) => s + entryUSD(e), 0);
-  const budget = BUDGETS[state.currentMonth];
+  const spent   = monthEntries.reduce((s, e) => s + entryUSD(e), 0);
+  const budget  = BUDGETS[state.currentMonth];
   const remaining = budget - spent;
   const pct = Math.min(100, (spent / budget) * 100);
 
   const remEl = document.getElementById('remaining');
   remEl.className = 'remaining-amount' + (remaining < 0 ? ' over' : '');
-  remEl.innerHTML = `<span class="cur">$</span>${Math.abs(remaining).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}${remaining < 0 ? ' 超過' : ''}`;
+  remEl.innerHTML = `<span class="cur">$</span>${Math.abs(remaining).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}${remaining < 0 ? ' 超過' : ''}`;
 
   document.getElementById('budgetVal').textContent = fmtUSD0(budget);
-  document.getElementById('spentVal').textContent = fmtUSD(spent);
+  document.getElementById('spentVal').textContent  = fmtUSD(spent);
 
   const bar = document.getElementById('barFill');
   bar.style.width = pct + '%';
@@ -454,7 +656,7 @@ function render() {
 
   document.getElementById('rateInput').value = state.rate;
 
-  // list
+  // entry list
   const list = document.getElementById('entryList');
   list.innerHTML = '';
   document.getElementById('listCount').textContent = monthEntries.length ? `${monthEntries.length}件` : '';
@@ -466,8 +668,14 @@ function render() {
       const div = document.createElement('div');
       div.className = 'entry';
       const statusHtml = e.confirmedUsd != null
-        ? `<span class="confirmed">✓ 確定 (¥${(e.confirmedRate||e.rate).toFixed(2)}換算)</span>`
+        ? `<span class="confirmed">✓ 確定 (¥${(e.confirmedRate || e.rate).toFixed(2)}換算)</span>`
         : `<span class="pending">概算 (¥${e.rate}換算)</span>`;
+      const editButtons = isEditMode
+        ? `<div class="entry-actions">
+             <button class="btn-confirm" data-confirm="${e.id}">${e.confirmedUsd != null ? '修正' : '確定'}</button>
+             <button class="del" data-del="${e.id}">×</button>
+           </div>`
+        : '';
       div.innerHTML = `
         <div class="info">
           <div class="store">${escapeHtml(e.store || '（無題）')}</div>
@@ -477,32 +685,32 @@ function render() {
           <div class="usd">${fmtUSD(usd)}</div>
           <div class="jpy">${fmtYen(e.yen)}</div>
         </div>
-        <div class="entry-actions">
-          <button class="btn-confirm" data-confirm="${e.id}">${e.confirmedUsd != null ? '修正' : '確定'}</button>
-          <button class="del" data-del="${e.id}">×</button>
-        </div>`;
+        ${editButtons}`;
       list.appendChild(div);
     });
     list.querySelectorAll('[data-del]').forEach(b => b.onclick = () => delEntry(b.dataset.del));
     list.querySelectorAll('[data-confirm]').forEach(b => b.onclick = () => openConfirm(b.dataset.confirm));
   }
+
+  applyEditMode();
 }
 
-function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-
+// ============================================================
+// Actions (edit mode only)
+// ============================================================
 function updatePreview() {
   const yen = parseFloat(document.getElementById('yenInput').value);
-  const p = document.getElementById('yenPreview');
+  const p   = document.getElementById('yenPreview');
   if (yen && state.rate) {
     p.innerHTML = `≈ <b>${fmtUSD(yen / state.rate)}</b> として記録（¥${state.rate}換算）`;
   } else { p.innerHTML = ''; }
 }
 
-// ---- actions ----
 function addEntry() {
+  if (!isEditMode) return;
   const store = document.getElementById('storeInput').value.trim();
-  const yen = parseFloat(document.getElementById('yenInput').value);
-  const date = document.getElementById('dateInput').value;
+  const yen   = parseFloat(document.getElementById('yenInput').value);
+  const date  = document.getElementById('dateInput').value;
   if (!yen || yen <= 0) { document.getElementById('yenInput').focus(); return; }
   state.entries.push({
     id: Date.now().toString(),
@@ -512,18 +720,20 @@ function addEntry() {
     confirmedUsd: null
   });
   document.getElementById('storeInput').value = '';
-  document.getElementById('yenInput').value = '';
+  document.getElementById('yenInput').value   = '';
   document.getElementById('yenPreview').innerHTML = '';
-  saveState(); render();
+  saveState();
 }
 
 function delEntry(id) {
+  if (!isEditMode) return;
   state.entries = state.entries.filter(e => e.id !== id);
-  saveState(); render();
+  saveState();
 }
 
-let fetchedRate = null;
-
+// ============================================================
+// Confirm / Rate fetch
+// ============================================================
 async function fetchTodayRate() {
   const sources = [
     async () => {
@@ -538,27 +748,26 @@ async function fetchTodayRate() {
     }
   ];
   for (const src of sources) {
-    try {
-      const rate = await src();
-      if (rate && rate > 0) return rate;
-    } catch (e) { /* try next */ }
+    try { const rate = await src(); if (rate && rate > 0) return rate; } catch (_) {}
   }
   return null;
 }
 
 function openConfirm(id) {
-  editingId = id;
+  if (!isEditMode) return;
+  editingId   = id;
   fetchedRate = null;
   const e = state.entries.find(x => x.id === id);
+
   const fetching = document.getElementById('modalFetching');
-  const result = document.getElementById('modalResult');
-  const manual = document.getElementById('manualRateField');
-  const okBtn = document.getElementById('modalOk');
+  const result   = document.getElementById('modalResult');
+  const manual   = document.getElementById('manualRateField');
+  const okBtn    = document.getElementById('modalOk');
 
   fetching.style.display = 'block';
-  fetching.textContent = '今日のレートを取得中…';
-  result.style.display = 'none';
-  manual.style.display = 'none';
+  fetching.textContent   = '今日のレートを取得中…';
+  result.style.display   = 'none';
+  manual.style.display   = 'none';
   document.getElementById('modalRate').value = '';
   okBtn.disabled = true;
   document.getElementById('confirmModal').classList.add('show');
@@ -567,33 +776,28 @@ function openConfirm(id) {
     if (rate) {
       fetchedRate = rate;
       fetching.style.display = 'none';
-      result.style.display = 'block';
-      const usd = e.yen / rate;
+      result.style.display   = 'block';
       result.innerHTML = `
         <div>${fmtYen(e.yen)} →</div>
-        <div class="conv">${fmtUSD(usd)}</div>
+        <div class="conv">${fmtUSD(e.yen / rate)}</div>
         <div class="rate-used">今日のレート ¥${rate.toFixed(2)} / $1 で換算</div>`;
       okBtn.disabled = false;
     } else {
       fetching.style.display = 'none';
-      result.style.display = 'block';
+      result.style.display   = 'block';
       result.innerHTML = `<div class="warn-fetch">レートを自動取得できませんでした。下に今日のレートを手で入れてください。</div>`;
       manual.style.display = 'block';
       const mr = document.getElementById('modalRate');
       mr.value = state.rate || '';
-      const recompute = () => {
-        const r = parseFloat(mr.value);
-        okBtn.disabled = !(r > 0);
-      };
-      mr.oninput = recompute;
-      recompute();
+      mr.oninput = () => { okBtn.disabled = !(parseFloat(mr.value) > 0); };
+      mr.oninput();
       mr.focus();
     }
   });
 }
 
 function closeConfirm() {
-  editingId = null;
+  editingId   = null;
   fetchedRate = null;
   document.getElementById('confirmModal').classList.remove('show');
 }
@@ -608,73 +812,60 @@ function saveConfirm() {
     state.rate = rate;
   }
   e.confirmedRate = rate;
-  e.confirmedUsd = e.yen / rate;
-  e.confirmedDate = new Date().toISOString().slice(0,10);
-  saveState(); render();
+  e.confirmedUsd  = e.yen / rate;
+  e.confirmedDate = new Date().toISOString().slice(0, 10);
+  saveState();
   closeConfirm();
 }
 
-// ---- export ----
+// ============================================================
+// CSV Export
+// ============================================================
 function exportCSV() {
   if (!state.entries.length) { alert('まだ記録がありません'); return; }
   const headers = ['月','日付','お店・内容','金額(円)','記録時レート','概算ドル','確定レート','確定ドル','確定日','状態','計上ドル'];
   const rows = state.entries
     .slice()
-    .sort((a,b) => (a.date||'').localeCompare(b.date||'') || a.id.localeCompare(b.id))
+    .sort((a, b) => (a.date || '').localeCompare(b.date || '') || a.id.localeCompare(b.id))
     .map(e => {
-      const approx = (e.yen / e.rate).toFixed(2);
+      const approx    = (e.yen / e.rate).toFixed(2);
       const confirmed = e.confirmedUsd != null ? e.confirmedUsd.toFixed(2) : '';
-      const confRate = e.confirmedUsd != null ? (e.confirmedRate||e.rate).toFixed(2) : '';
-      const confDate = e.confirmedDate || '';
-      const status = e.confirmedUsd != null ? '確定' : '概算';
-      const counted = entryUSD(e).toFixed(2);
+      const confRate  = e.confirmedUsd != null ? (e.confirmedRate || e.rate).toFixed(2) : '';
       return [
-        MONTH_LABELS[e.month],
-        e.date || '',
-        e.store || '',
-        e.yen,
-        e.rate,
-        approx,
-        confRate,
-        confirmed,
-        confDate,
-        status,
-        counted
+        MONTH_LABELS[e.month], e.date || '', e.store || '', e.yen, e.rate, approx,
+        confRate, confirmed, e.confirmedDate || '',
+        e.confirmedUsd != null ? '確定' : '概算',
+        entryUSD(e).toFixed(2)
       ];
     });
-
   rows.push([]);
-  [1,2].forEach(m => {
+  [1, 2].forEach(m => {
     const ms = state.entries.filter(e => e.month === m);
     if (!ms.length) return;
-    const total = ms.reduce((s,e) => s + entryUSD(e), 0);
-    rows.push([MONTH_LABELS[m]+' 合計','','','','','','','','','', total.toFixed(2)]);
-    rows.push([MONTH_LABELS[m]+' 予算','','','','','','','','','', BUDGETS[m].toFixed(2)]);
-    rows.push([MONTH_LABELS[m]+' 残り','','','','','','','','','', (BUDGETS[m]-total).toFixed(2)]);
+    const total = ms.reduce((s, e) => s + entryUSD(e), 0);
+    rows.push([MONTH_LABELS[m] + ' 合計','','','','','','','','','', total.toFixed(2)]);
+    rows.push([MONTH_LABELS[m] + ' 予算','','','','','','','','','', BUDGETS[m].toFixed(2)]);
+    rows.push([MONTH_LABELS[m] + ' 残り','','','','','','','','','', (BUDGETS[m] - total).toFixed(2)]);
   });
-
-  const esc = v => {
-    const s = String(v ?? '');
-    return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
-  };
+  const esc = v => { const s = String(v ?? ''); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
   const csv = [headers, ...rows].map(r => r.map(esc).join(',')).join('\r\n');
   const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
   const today = new Date();
   const stamp = `${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}`;
-  a.href = url;
-  a.download = `帰省家計簿_${stamp}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  a.href = url; a.download = `帰省家計簿_${stamp}.csv`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 
-// ---- init ----
+// ============================================================
+// Event listeners
+// ============================================================
 document.getElementById('rateInput').addEventListener('input', ev => {
+  if (!isEditMode) return;
   state.rate = parseFloat(ev.target.value) || 0;
-  saveState(); updatePreview(); render();
+  saveState(); updatePreview();
 });
 document.getElementById('yenInput').addEventListener('input', updatePreview);
 document.getElementById('addBtn').addEventListener('click', addEntry);
@@ -685,16 +876,26 @@ document.getElementById('confirmModal').addEventListener('click', ev => {
   if (ev.target.id === 'confirmModal') closeConfirm();
 });
 
+// ============================================================
+// Service Worker & Init
+// ============================================================
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 
 (function init() {
-  loadState();
   const t = new Date();
   document.getElementById('dateInput').value =
     `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
-  render();
+
+  // 初回PIN未設定なら説明を変える
+  getPin().then(pin => {
+    if (!pin) {
+      document.getElementById('pinDesc').textContent = '初回：4桁のPINを決めて入力してください';
+    }
+  });
+
+  applyEditMode();
 })();
 </script>
 </body>
