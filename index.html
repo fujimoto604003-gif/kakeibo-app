@@ -139,6 +139,16 @@
   }
   .budget-meta b { color: var(--ink); }
 
+  .remaining-jpy {
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-top: 2px;
+    margin-bottom: 2px;
+    letter-spacing: 0.01em;
+  }
+  .remaining-jpy b { color: var(--ink); font-family: 'Fraunces', serif; font-size: 1.05rem; }
+
   .bar-track { height: 9px; background: #ece5d6; border-radius: 99px; margin-top: 14px; overflow: hidden; }
   .bar-fill {
     height: 100%; border-radius: 99px;
@@ -357,6 +367,7 @@
   <div class="budget-card">
     <div class="remaining-label">今月の残り</div>
     <div class="remaining-amount" id="remaining"><span class="cur">$</span>0</div>
+    <div class="remaining-jpy" id="remainingJpy"></div>
     <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
     <div class="budget-meta">
       <span>予算 <b id="budgetVal">$0</b></span>
@@ -649,6 +660,16 @@ function render() {
 
   document.getElementById('budgetVal').textContent = fmtUSD0(budget);
   document.getElementById('spentVal').textContent  = fmtUSD(spent);
+
+  // 円換算の残高表示
+  const jpyEl = document.getElementById('remainingJpy');
+  if (state.rate && state.rate > 0) {
+    const remainJpy = remaining * state.rate;
+    const sign = remainJpy >= 0 ? '≈ ' : '≈ -';
+    jpyEl.innerHTML = `${sign}<b>${fmtYen(Math.abs(remainJpy))}</b>（¥${state.rate}換算）`;
+  } else {
+    jpyEl.textContent = '';
+  }
 
   const bar = document.getElementById('barFill');
   bar.style.width = pct + '%';
