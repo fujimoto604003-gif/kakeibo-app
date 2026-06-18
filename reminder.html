@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>リマインダー</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#5a7d52">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap');
+
+  :root {
+    --ink: #2b2a26;
+    --paper: #f6f1e7;
+    --card: #fffdf8;
+    --line: #e0d8c6;
+    --accent: #5a7d52;
+    --accent-soft: #c8ddc4;
+    --accent2: #c25b3a;
+    --muted: #8a8475;
+    --done-bg: #f0f6ee;
+    --done-border: #c8ddc4;
+    --done-text: #8aad82;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Zen Maru Gothic', sans-serif;
+    background: var(--paper);
+    background-image: radial-gradient(circle at 20% 10%, rgba(90,125,82,0.05), transparent 40%),
+                      radial-gradient(circle at 80% 90%, rgba(194,91,58,0.04), transparent 40%);
+    color: var(--ink);
+    padding: 16px;
+    padding-bottom: 120px;
+    max-width: 540px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+
+  header {
+    text-align: center;
+    margin: 8px 0 22px;
+    position: relative;
+  }
+  header h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  header .sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+  .home-link {
+    position: absolute;
+    top: 0; left: 0;
+    font-size: 0.72rem; color: var(--muted);
+    text-decoration: none;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 6px 10px;
+    display: flex; align-items: center; gap: 4px;
+    transition: all 0.2s;
+  }
+  .home-link:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* --- Stats bar --- */
+  .stats-bar {
+    display: flex; gap: 10px; margin-bottom: 18px;
+  }
+  .stat-card {
+    flex: 1;
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    border-radius: 16px;
+    padding: 14px 10px;
+    text-align: center;
+  }
+  .stat-card .num {
+    font-family: 'Fraunces', serif;
+    font-size: 1.8rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .stat-card .lbl { font-size: 0.72rem; color: var(--muted); margin-top: 3px; }
+  .stat-card.done-card .num { color: var(--accent); }
+
+  /* --- Filter tabs --- */
+  .filter-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .filter-tab {
+    flex: 1; padding: 10px 6px;
+    border: 1.5px solid var(--line);
+    background: var(--card);
+    border-radius: 12px;
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 0.82rem;
+    color: var(--muted);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .filter-tab.active {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(90,125,82,0.25);
+  }
+
+  /* --- Add form --- */
+  .add-card {
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    border-radius: 20px;
+    padding: 18px;
+    margin-bottom: 20px;
+  }
+  .add-card h2 {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 0.76rem; color: var(--muted); margin-bottom: 4px; }
+  .field input, .field textarea, .field select {
+    width: 100%;
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 1rem;
+    background: var(--paper);
+    color: var(--ink);
+    outline: none;
+    transition: border 0.2s;
+    appearance: none;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); }
+  .field textarea { resize: none; height: 70px; line-height: 1.5; }
+  .row2 { display: flex; gap: 10px; }
+  .row2 .field { flex: 1; }
+  .btn-add {
+    width: 100%; border: none;
+    background: var(--ink); color: var(--paper);
+    border-radius: 14px; padding: 15px;
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 1rem; font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s;
+  }
+  .btn-add:active { transform: scale(0.98); }
+  .btn-add:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* --- List section --- */
+  .section-header {
+    font-size: 0.8rem; color: var(--muted);
+    margin: 0 4px 10px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .section-header .badge {
+    background: var(--line);
+    border-radius: 99px;
+    padding: 2px 8px;
+    font-size: 0.7rem;
+  }
+
+  .item-card {
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex; align-items: flex-start; gap: 12px;
+    transition: all 0.2s;
+  }
+  .item-card.is-done {
+    background: var(--done-bg);
+    border-color: var(--done-border);
+    opacity: 0.75;
+  }
+
+  /* --- Check button --- */
+  .check-btn {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--line);
+    background: var(--paper);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    transition: all 0.2s;
+    color: transparent;
+    margin-top: 2px;
+  }
+  .check-btn:hover { border-color: var(--accent); }
+  .item-card.is-done .check-btn {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .item-body { flex: 1; min-width: 0; }
+  .item-title {
+    font-size: 0.97rem; font-weight: 500; line-height: 1.4;
+    word-break: break-word;
+  }
+  .item-card.is-done .item-title {
+    color: var(--done-text);
+    text-decoration: line-through;
+    text-decoration-color: var(--done-text);
+  }
+  .item-meta {
+    font-size: 0.7rem; color: var(--muted); margin-top: 4px;
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+  }
+  .item-note {
+    font-size: 0.78rem; color: var(--muted);
+    margin-top: 6px; line-height: 1.5;
+  }
+  .item-card.is-done .item-note { color: var(--done-text); }
+
+  .cat-badge {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 99px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    border: 1px solid;
+  }
+  .cat-todo  { color: #6b7fe0; border-color: #c4caf6; background: #f0f2fd; }
+  .cat-buy   { color: #c25b3a; border-color: #e8c9b8; background: #fef5f2; }
+  .cat-other { color: var(--muted); border-color: var(--line); background: var(--paper); }
+
+  .done-stamp {
+    font-size: 0.68rem; color: var(--accent); font-weight: 700;
+    display: flex; align-items: center; gap: 3px;
+  }
+
+  .item-actions {
+    display: flex; flex-direction: column; gap: 4px;
+    align-items: center; flex-shrink: 0;
+  }
+  .del-btn {
+    border: none; background: none; color: var(--muted);
+    font-size: 1.3rem; cursor: pointer; padding: 0 2px;
+    line-height: 1; transition: color 0.15s;
+  }
+  .del-btn:hover { color: var(--accent2); }
+
+  .empty { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 30px 0; }
+
+  .done-section-toggle {
+    width: 100%;
+    background: none;
+    border: 1.5px dashed var(--line);
+    border-radius: 12px;
+    padding: 10px;
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 0.82rem;
+    color: var(--muted);
+    cursor: pointer;
+    margin: 10px 0;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .done-section-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-clear-done {
+    width: 100%;
+    border: 1.5px solid var(--line);
+    background: var(--card);
+    color: var(--muted);
+    border-radius: 14px;
+    padding: 12px;
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: all 0.2s;
+  }
+  .btn-clear-done:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  .note { font-size: 0.7rem; color: var(--muted); text-align: center; margin-top: 24px; line-height: 1.6; padding: 0 12px; }
+
+  /* confirm dialog */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(43,42,38,0.5);
+    display: none; align-items: center; justify-content: center;
+    padding: 24px; z-index: 50;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: var(--card); border-radius: 20px;
+    padding: 22px; width: 100%; max-width: 320px; text-align: center;
+  }
+  .modal h3 { font-family: 'Fraunces', serif; font-size: 1.1rem; margin-bottom: 8px; }
+  .modal p { font-size: 0.82rem; color: var(--muted); margin-bottom: 18px; }
+  .modal-btns { display: flex; gap: 8px; }
+  .modal-btns button {
+    flex: 1; padding: 12px; border-radius: 12px; border: none;
+    font-family: 'Zen Maru Gothic', sans-serif; font-size: 0.9rem;
+    font-weight: 700; cursor: pointer;
+  }
+  .modal .cancel-btn { background: var(--paper); border: 1.5px solid var(--line) !important; color: var(--muted); }
+  .modal .ok-btn { background: var(--accent2); color: #fff; }
+</style>
+</head>
+<body>
+  <header>
+<h1>リマインダー</h1>
+    <div class="sub">やること・買いたいもの</div>
+  </header>
+
+  <div class="stats-bar" id="statsBar"></div>
+
+  <div class="filter-tabs" id="filterTabs">
+    <button class="filter-tab active" data-filter="all">すべて</button>
+    <button class="filter-tab" data-filter="todo">📋 やること</button>
+    <button class="filter-tab" data-filter="buy">🛒 買うもの</button>
+  </div>
+
+  <div class="add-card">
+    <h2>＋ 追加する</h2>
+    <div class="field">
+      <label>内容</label>
+      <input type="text" id="titleInput" placeholder="例：荷物を整理する、新しいシャンプーを買う">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>カテゴリ</label>
+        <select id="catInput">
+          <option value="todo">📋 やること</option>
+          <option value="buy">🛒 買うもの</option>
+          <option value="other">📌 その他</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>メモ（任意）</label>
+      <textarea id="noteInput" placeholder="詳細や数量など…"></textarea>
+    </div>
+    <button class="btn-add" id="addBtn">追加する</button>
+  </div>
+
+  <div class="section-header">
+    <span>未完了</span>
+    <span class="badge" id="pendingCount"></span>
+  </div>
+  <div id="pendingList"></div>
+
+  <button class="done-section-toggle" id="doneToggle">✓ 完了済みを表示</button>
+
+  <div id="doneSection" style="display:none;">
+    <div class="section-header">
+      <span>完了済み</span>
+      <span class="badge" id="doneCount"></span>
+    </div>
+    <div id="doneList"></div>
+    <button class="btn-clear-done" id="clearDoneBtn">🗑 完了済みをすべて削除</button>
+  </div>
+
+  <div class="note">タップで「済」マーク。完了したアイテムは下の<b>完了済み</b>欄に移動します。</div>
+
+  <!-- confirm modal -->
+  <div class="modal-bg" id="confirmModal">
+    <div class="modal">
+      <h3>完了済みを削除</h3>
+      <p>「済」マークのついたアイテムをすべて削除します。この操作は元に戻せません。</p>
+      <div class="modal-btns">
+        <button class="cancel-btn" id="confirmCancel">やめる</button>
+        <button class="ok-btn" id="confirmOk">削除する</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+// State
+let items = [];
+let currentFilter = 'all';
+let showDone = false;
+
+function saveItems() {
+  try { localStorage.setItem('reminder-items', JSON.stringify(items)); } catch (_) {}
+}
+
+function loadItems() {
+  try {
+    const r = localStorage.getItem('reminder-items');
+    if (r) items = JSON.parse(r);
+  } catch (_) {}
+  render();
+}
+
+loadItems();
+
+// Helpers
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function catLabel(cat) {
+  return { todo: '📋 やること', buy: '🛒 買うもの', other: '📌 その他' }[cat] || cat;
+}
+function catClass(cat) {
+  return { todo: 'cat-todo', buy: 'cat-buy', other: 'cat-other' }[cat] || 'cat-other';
+}
+
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+// Render
+function render() {
+  const filtered = currentFilter === 'all'
+    ? items
+    : items.filter(i => i.cat === currentFilter);
+
+  const pending = filtered.filter(i => !i.done);
+  const done    = filtered.filter(i =>  i.done);
+
+  // stats
+  const allPending = items.filter(i => !i.done).length;
+  const allDone    = items.filter(i =>  i.done).length;
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat-card"><div class="num">${allPending}</div><div class="lbl">未完了</div></div>
+    <div class="stat-card done-card"><div class="num">${allDone}</div><div class="lbl">完了済み</div></div>
+    <div class="stat-card"><div class="num">${items.length}</div><div class="lbl">合計</div></div>
+  `;
+
+  document.getElementById('pendingCount').textContent = pending.length ? `${pending.length}件` : '';
+  document.getElementById('doneCount').textContent    = done.length    ? `${done.length}件`    : '';
+
+  // pending list
+  const pList = document.getElementById('pendingList');
+  pList.innerHTML = '';
+  if (!pending.length) {
+    pList.innerHTML = '<div class="empty">未完了のアイテムはありません 🎉</div>';
+  } else {
+    pending.forEach(item => pList.appendChild(makeCard(item)));
+  }
+
+  // done list
+  const dList = document.getElementById('doneList');
+  dList.innerHTML = '';
+  if (showDone) {
+    if (!done.length) {
+      dList.innerHTML = '<div class="empty">完了済みのアイテムはありません</div>';
+    } else {
+      done.forEach(item => dList.appendChild(makeCard(item)));
+    }
+  }
+
+  document.getElementById('doneSection').style.display = showDone ? '' : 'none';
+  document.getElementById('doneToggle').textContent =
+    showDone
+      ? `▲ 完了済みを隠す（${done.length}件）`
+      : `✓ 完了済みを表示（${done.length}件）`;
+}
+
+function makeCard(item) {
+  const div = document.createElement('div');
+  div.className = 'item-card' + (item.done ? ' is-done' : '');
+
+  const doneStampHtml = item.done && item.doneAt
+    ? `<span class="done-stamp">✓ 済 ${fmtDate(item.doneAt)}</span>`
+    : '';
+
+  div.innerHTML = `
+    <button class="check-btn" data-id="${item.id}" title="${item.done ? '未完了に戻す' : '完了にする'}">
+      ${item.done ? '✓' : ''}
+    </button>
+    <div class="item-body">
+      <div class="item-title">${escapeHtml(item.title)}</div>
+      <div class="item-meta">
+        <span class="cat-badge ${catClass(item.cat)}">${catLabel(item.cat)}</span>
+        <span>${fmtDate(item.createdAt)}</span>
+        ${doneStampHtml}
+      </div>
+      ${item.note ? `<div class="item-note">${escapeHtml(item.note)}</div>` : ''}
+    </div>
+    <div class="item-actions">
+      <button class="del-btn" data-del="${item.id}" title="削除">×</button>
+    </div>
+  `;
+
+  div.querySelector('.check-btn').addEventListener('click', () => toggleDone(item.id));
+  div.querySelector('.del-btn').addEventListener('click', () => deleteItem(item.id));
+  return div;
+}
+
+function addItem() {
+  const title = document.getElementById('titleInput').value.trim();
+  if (!title) { document.getElementById('titleInput').focus(); return; }
+  const cat  = document.getElementById('catInput').value;
+  const note = document.getElementById('noteInput').value.trim();
+  items.unshift({
+    id: Date.now().toString(),
+    title, cat, note,
+    done: false,
+    createdAt: new Date().toISOString(),
+    doneAt: null
+  });
+  document.getElementById('titleInput').value = '';
+  document.getElementById('noteInput').value  = '';
+  document.getElementById('titleInput').focus();
+  saveItems();
+}
+
+function toggleDone(id) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  item.done   = !item.done;
+  item.doneAt = item.done ? new Date().toISOString() : null;
+  saveItems();
+}
+
+function deleteItem(id) {
+  items = items.filter(i => i.id !== id);
+  saveItems();
+}
+
+function clearDone() {
+  items = items.filter(i => !i.done);
+  saveItems();
+  document.getElementById('confirmModal').classList.remove('show');
+}
+
+// Event listeners
+document.getElementById('addBtn').addEventListener('click', addItem);
+document.getElementById('titleInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addItem();
+});
+
+document.getElementById('filterTabs').querySelectorAll('.filter-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    render();
+  });
+});
+
+document.getElementById('doneToggle').addEventListener('click', () => {
+  showDone = !showDone;
+  render();
+});
+
+document.getElementById('clearDoneBtn').addEventListener('click', () => {
+  document.getElementById('confirmModal').classList.add('show');
+});
+document.getElementById('confirmCancel').addEventListener('click', () => {
+  document.getElementById('confirmModal').classList.remove('show');
+});
+document.getElementById('confirmOk').addEventListener('click', clearDone);
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
