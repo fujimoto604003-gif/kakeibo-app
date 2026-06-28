@@ -469,7 +469,7 @@ const db  = getDatabase(app);
 // ============================================================
 // State
 // ============================================================
-const BUDGETS      = { 1: 2500, 2: 2000 };
+const BUDGETS      = { 1: 2754.20, 2: 2000 };  // 1ヶ月目: 2500 + 254.20
 const MONTH_LABELS = { 1: '1ヶ月目', 2: '2ヶ月目' };
 let state      = { rate: 160, currentMonth: 1, entries: [] };
 let isEditMode = false;
@@ -617,7 +617,6 @@ document.getElementById('pinInput').addEventListener('keydown', e => {
 // Helpers
 // ============================================================
 const fmtUSD  = n => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const fmtUSD0 = n => '$' + Math.round(n).toLocaleString('en-US');
 const fmtYen  = n => '¥' + Math.round(n).toLocaleString('ja-JP');
 
 function entryUSD(e) {
@@ -639,7 +638,7 @@ function render() {
   [1, 2].forEach(m => {
     const d = document.createElement('div');
     d.className = 'month-tab' + (state.currentMonth === m ? ' active' : '');
-    d.innerHTML = `${MONTH_LABELS[m]}<b>${fmtUSD0(BUDGETS[m])}</b>`;
+    d.innerHTML = `${MONTH_LABELS[m]}<b>${fmtUSD(BUDGETS[m])}</b>`;
     d.onclick = () => {
       if (!isEditMode) return;
       state.currentMonth = m;
@@ -658,7 +657,7 @@ function render() {
   remEl.className = 'remaining-amount' + (remaining < 0 ? ' over' : '');
   remEl.innerHTML = `<span class="cur">$</span>${Math.abs(remaining).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}${remaining < 0 ? ' 超過' : ''}`;
 
-  document.getElementById('budgetVal').textContent = fmtUSD0(budget);
+  document.getElementById('budgetVal').textContent = fmtUSD(budget);
   document.getElementById('spentVal').textContent  = fmtUSD(spent);
 
   // 円換算の残高表示
