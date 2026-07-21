@@ -149,6 +149,8 @@
   }
   .remaining-jpy b { color: var(--ink); font-family: 'Fraunces', serif; font-size: 1.05rem; }
 
+  .carry-note { display: block; font-size: 0.66rem; color: var(--green); font-weight: 500; margin-top: 1px; }
+
   .bar-track { height: 9px; background: #ece5d6; border-radius: 99px; margin-top: 14px; overflow: hidden; }
   .bar-fill {
     height: 100%; border-radius: 99px;
@@ -370,7 +372,7 @@
     <div class="remaining-jpy" id="remainingJpy"></div>
     <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
     <div class="budget-meta">
-      <span>予算 <b id="budgetVal">$0</b></span>
+      <span>予算 <b id="budgetVal">$0</b><span id="carryNote" class="carry-note"></span></span>
       <span>使った額 <b id="spentVal">$0</b></span>
     </div>
   </div>
@@ -623,6 +625,19 @@ function entryUSD(e) {
   return e.confirmedUsd != null ? e.confirmedUsd : e.yen / e.rate;
 }
 
+// 指定月の支出合計（ドル）
+function monthSpent(m) {
+  return state.entries.filter(e => e.month === m).reduce((s, e) => s + entryUSD(e), 0);
+}
+// 前月からの繰り越し（1ヶ月目に余りがあるときだけ2ヶ月目へ。超過しても2ヶ月目は減らさない）
+function carryover(m) {
+  return m === 2 ? Math.max(0, BUDGETS[1] - monthSpent(1)) : 0;
+}
+// 繰り越しを含んだ実質予算
+function effectiveBudget(m) {
+  return BUDGETS[m] + carryover(m);
+}
+
 function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, c =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -638,7 +653,7 @@ function render() {
   [1, 2].forEach(m => {
     const d = document.createElement('div');
     d.className = 'month-tab' + (state.currentMonth === m ? ' active' : '');
-    d.innerHTML = `${MONTH_LABELS[m]}<b>${fmtUSD(BUDGETS[m])}</b>`;
+    d.innerHTML = `${MONTH_LABELS[m]}<b>${fmtUSD(effectiveBudget(m))}</b>`;
     d.onclick = () => {
       if (!isEditMode) return;
       state.currentMonth = m;
@@ -649,7 +664,7 @@ function render() {
 
   const monthEntries = state.entries.filter(e => e.month === state.currentMonth);
   const spent   = monthEntries.reduce((s, e) => s + entryUSD(e), 0);
-  const budget  = BUDGETS[state.currentMonth];
+  const budget  = effectiveBudget(state.currentMonth);
   const remaining = budget - spent;
   const pct = Math.min(100, (spent / budget) * 100);
 
@@ -659,6 +674,16 @@ function render() {
 
   document.getElementById('budgetVal').textContent = fmtUSD(budget);
   document.getElementById('spentVal').textContent  = fmtUSD(spent);
+
+  // 繰り越しの内訳表示（2ヶ月目のみ）
+  const carryNoteEl = document.getElementById('carryNote');
+  const carry = carryover(state.currentMonth);
+  if (carry > 0.005) {
+    carryNoteEl.className = 'carry-note';
+    carryNoteEl.textContent = `＋1ヶ月目の繰越 ${fmtUSD(carry)}`;
+  } else {
+    carryNoteEl.textContent = '';
+  }
 
   // 円換算の残高表示
   const jpyEl = document.getElementById('remainingJpy');
@@ -865,7 +890,11 @@ function exportCSV() {
     const total = ms.reduce((s, e) => s + entryUSD(e), 0);
     rows.push([MONTH_LABELS[m] + ' 合計','','','','','','','','','', total.toFixed(2)]);
     rows.push([MONTH_LABELS[m] + ' 予算','','','','','','','','','', BUDGETS[m].toFixed(2)]);
-    rows.push([MONTH_LABELS[m] + ' 残り','','','','','','','','','', (BUDGETS[m] - total).toFixed(2)]);
+    const carry = carryover(m);
+    if (Math.abs(carry) > 0.005) {
+      rows.push([MONTH_LABELS[m] + ' 前月繰越','','','','','','','','','', carry.toFixed(2)]);
+    }
+    rows.push([MONTH_LABELS[m] + ' 残り','','','','','','','','','', (effectiveBudget(m) - total).toFixed(2)]);
   });
   const esc = v => { const s = String(v ?? ''); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
   const csv = [headers, ...rows].map(r => r.map(esc).join(',')).join('\r\n');
